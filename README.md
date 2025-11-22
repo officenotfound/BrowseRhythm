@@ -42,5 +42,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ---
 
 <p align="center">
-  Made with ❤️ by Jeffrey @ [404: Office Not Found](https://404officenotfound.com)
+  Made with ❤️ by Jeffrey @ <a href="https://404officenotfound.com">404: Office Not Found</a>
 </p>
