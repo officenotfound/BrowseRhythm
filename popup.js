@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ticks: {
                         color: isDarkMode ? '#64748b' : '#94a3b8',
                         font: {
-                            family: "'Outfit', sans-serif",
+                            family: "'Inter', sans-serif",
                             size: 10
                         }
                     },

@@ -10,39 +10,34 @@
   --text-muted: #64748b;
 
   --accent-primary: #38bdf8;
-  /* Sky Blue */
   --accent-secondary: #818cf8;
-  /* Indigo */
   --accent-gradient: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
 
   --success: #4ade80;
   --danger: #f43f5e;
 
-  --font-family: 'Outfit', sans-serif;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 12px;
 
-  /* Chart Colors */
   --chart-border: #38bdf8;
   --chart-tick: #64748b;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    --glass-bg: rgba(255, 255, 255, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --bg-gradient: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
 
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-muted: #94a3b8;
 
     --accent-primary: #0ea5e9;
-    /* Darker Sky Blue */
     --accent-secondary: #6366f1;
-    /* Darker Indigo */
     --accent-gradient: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
 
     --chart-border: #0ea5e9;
@@ -76,7 +71,7 @@ body {
 
 @media (prefers-color-scheme: light) {
   .background-mesh {
-    background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15) 0%, transparent 50%);
+    background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
   }
 }
 
@@ -346,7 +341,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   .icon-btn {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -357,7 +352,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   .icon-btn:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -371,7 +366,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   .text-btn {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -382,7 +377,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   .text-btn:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.1);
   }
 }
 
