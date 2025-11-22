@@ -1,5 +1,33 @@
-// Import storage utilities
-importScripts('storage.js');
+// Storage utilities for popup
+const StorageUtils = {
+    getTodayKey() {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    },
+
+    async getDailyStats(date = null) {
+        const dateKey = date || this.getTodayKey();
+        const result = await chrome.storage.local.get(['dailyStats']);
+        const dailyStats = result.dailyStats || {};
+        return dailyStats[dateKey] || {};
+    },
+
+    async getHourlyBreakdown() {
+        const result = await chrome.storage.local.get(['hourlyData']);
+        const hourlyData = result.hourlyData || {};
+        const dateKey = this.getTodayKey();
+        return hourlyData[dateKey] || new Array(24).fill(0);
+    },
+
+    async getTopSites(limit = 5) {
+        const stats = await this.getDailyStats();
+        const sites = Object.entries(stats)
+            .map(([domain, time]) => ({ domain, time }))
+            .sort((a, b) => b.time - a.time)
+            .slice(0, limit);
+        return sites;
+    }
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('BrowseRhythm Popup Loaded');
