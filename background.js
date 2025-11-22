@@ -11,43 +11,61 @@ let currentSession = null;
  * Get active blocklist based on Focus Mode settings
  */
 async function getActiveBlocklist() {
-  const result = await chrome.storage.local.get(['focusMode']);
-  const focusMode = result.focusMode || { enabled: false, presets: {}, customBlocklist: [] };
+  try {
+    const result = await chrome.storage.local.get(['focusMode']);
+    const focusMode = result.focusMode || { enabled: false, presets: {}, customBlocklist: [] };
 
-  if (!focusMode.enabled) {
+    if (!focusMode.enabled) {
+      return [];
+    }
+
+    let blocklist = Array.isArray(focusMode.customBlocklist) ? [...focusMode.customBlocklist] : [];
+
+    // Add preset lists if enabled
+    if (focusMode.presets.social && PRESET_BLOCKLISTS.social) {
+      blocklist = blocklist.concat(PRESET_BLOCKLISTS.social);
+    }
+    if (focusMode.presets.streaming && PRESET_BLOCKLISTS.streaming) {
+      blocklist = blocklist.concat(PRESET_BLOCKLISTS.streaming);
+    }
+    if (focusMode.presets.news && PRESET_BLOCKLISTS.news) {
+      blocklist = blocklist.concat(PRESET_BLOCKLISTS.news);
+    }
+    if (focusMode.presets.gaming && PRESET_BLOCKLISTS.gaming) {
+      blocklist = blocklist.concat(PRESET_BLOCKLISTS.gaming);
+    }
+
+    return blocklist;
+  } catch (error) {
+    console.error('Error getting active blocklist:', error);
     return [];
   }
-
-  let blocklist = [...focusMode.customBlocklist];
-
-  // Add preset lists if enabled
-  if (focusMode.presets.social) {
-    blocklist = blocklist.concat(PRESET_BLOCKLISTS.social);
-  }
-  if (focusMode.presets.streaming) {
-    blocklist = blocklist.concat(PRESET_BLOCKLISTS.streaming);
-  }
-  if (focusMode.presets.news) {
-    blocklist = blocklist.concat(PRESET_BLOCKLISTS.news);
-  }
-  if (focusMode.presets.gaming) {
-    blocklist = blocklist.concat(PRESET_BLOCKLISTS.gaming);
-  }
-
-  return blocklist;
 }
 
 /**
  * Check if a domain is blocked
  */
 async function isBlocked(url) {
-  const domain = getDomainFromUrl(url);
-  const blocklist = await getActiveBlocklist();
+  try {
+    if (!url || typeof url !== 'string') {
+      return false;
+    }
 
-  // Check if domain matches any blocked site
-  return blocklist.some(blocked => {
-    return domain === blocked || domain.endsWith('.' + blocked);
-  });
+    const domain = getDomainFromUrl(url);
+    if (!domain || domain === 'unknown') {
+      return false;
+    }
+
+    const blocklist = await getActiveBlocklist();
+
+    // Check if domain matches any blocked site
+    return blocklist.some(blocked => {
+      return domain === blocked || domain.endsWith('.' + blocked);
+    });
+  } catch (error) {
+    console.error('Error checking if blocked:', error);
+    return false;
+  }
 }
 
 // ===== TIME TRACKING =====

@@ -101,20 +101,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Clean up domain (remove protocol, www, trailing slash)
+        // Clean up domain (remove protocol, www, trailing slash, path)
         domain = domain.replace(/^https?:\/\//, '');
         domain = domain.replace(/^www\./, '');
-        domain = domain.replace(/\/$/, '');
+        domain = domain.split('/')[0]; // Remove path
+        domain = domain.split('?')[0]; // Remove query params
+        domain = domain.split('#')[0]; // Remove hash
 
-        // Basic validation
-        if (!domain.includes('.')) {
+        // Enhanced validation
+        const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/;
+        if (!domainRegex.test(domain)) {
             showStatus('Please enter a valid domain (e.g., example.com)', true);
+            return;
+        }
+
+        // Check for invalid characters
+        if (domain.includes(' ') || domain.includes('@')) {
+            showStatus('Domain cannot contain spaces or @ symbols', true);
             return;
         }
 
         // Check if already exists
         if (focusSettings.customBlocklist.includes(domain)) {
             showStatus('This site is already in your blocklist', true);
+            return;
+        }
+
+        // Limit to 100 custom domains
+        if (focusSettings.customBlocklist.length >= 100) {
+            showStatus('Maximum 100 custom domains allowed', true);
             return;
         }
 
