@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrowseRhythm</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <span class="icon">🎵</span>
+        <h1>BrowseRhythm</h1>
+      </div>
+      <div class="productivity-score">
+        <span id="score-value">--</span>
+        <span class="label">Rhythm Score</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="card chart-card">
+        <h2>Today's Rhythm</h2>
+        <canvas id="activityChart"></canvas>
+      </div>
+
+      <div class="card focus-card">
+        <div class="focus-header">
+          <h2>Focus Session</h2>
+          <label class="switch">
+            <input type="checkbox" id="focus-toggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <p id="focus-status">Ready to flow?</p>
+      </div>
+
+      <div class="card stats-card">
+        <h3>Top Sites</h3>
+        <ul id="top-sites-list">
+          <!-- Populated by JS -->
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <button id="settings-btn">Settings</button>
+      <button id="report-btn">Weekly Report</button>
+    </footer>
+  </div>
+  <script src="chart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
