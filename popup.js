@@ -208,7 +208,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const focusToggle = document.getElementById('focus-toggle');
     const focusStatus = document.getElementById('focus-status');
 
-    focusToggle.addEventListener('change', (e) => {
+    // Load focus mode state
+    const focusResult = await chrome.storage.local.get(['focusMode']);
+    const focusMode = focusResult.focusMode || { enabled: false };
+    focusToggle.checked = focusMode.enabled;
+
+    // Update status text based on state
+    if (focusMode.enabled) {
+        focusStatus.textContent = "Focus Mode Active 🚀";
+        focusStatus.style.color = isDarkMode ? "#38bdf8" : "#0ea5e9";
+    }
+
+    focusToggle.addEventListener('change', async (e) => {
+        const result = await chrome.storage.local.get(['focusMode']);
+        const settings = result.focusMode || { enabled: false, presets: {}, customBlocklist: [] };
+        settings.enabled = e.target.checked;
+        await chrome.storage.local.set({ focusMode: settings });
+
         if (e.target.checked) {
             focusStatus.textContent = "Focus Mode Active 🚀";
             focusStatus.style.color = isDarkMode ? "#38bdf8" : "#0ea5e9";
@@ -216,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             focusStatus.textContent = "Enter the zone";
             focusStatus.style.color = isDarkMode ? "#94a3b8" : "#475569";
         }
-        // TODO: Implement focus mode blocking
     });
 
     // Set Date
