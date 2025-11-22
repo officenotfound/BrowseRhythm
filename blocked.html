@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Blocked - BrowseRhythm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .blocked-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+        }
+
+        .blocked-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+        }
+
+        .blocked-container h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+
+        .blocked-site {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin: 16px 0;
+            font-size: 1.1rem;
+        }
+
+        .blocked-message {
+            color: var(--text-secondary);
+            margin: 16px 0 32px 0;
+            line-height: 1.6;
+        }
+
+        .quote {
+            font-style: italic;
+            color: var(--text-muted);
+            margin: 24px 0;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: var(--radius-sm);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .quote {
+                background: rgba(0, 0, 0, 0.02);
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .btn-secondary:hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-mesh"></div>
+
+    <div class="blocked-container glass-panel">
+        <div class="blocked-icon">🚫</div>
+        <h1>Site Blocked</h1>
+        <div class="blocked-site" id="blocked-site">Loading...</div>
+        <p class="blocked-message">
+            This site is blocked during Focus Mode. Stay focused on what matters!
+        </p>
+
+        <div class="quote">
+            "The successful warrior is the average man, with laser-like focus."
+            <br>— Bruce Lee
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="disable-focus">Disable Focus Mode</button>
+            <a href="settings.html" class="btn btn-secondary">Manage Settings</a>
+        </div>
+    </div>
+
+    <script>
+        // Get blocked site from URL parameter
+        const params = new URLSearchParams(window.location.search);
+        const blockedSite = params.get('site') || 'this site';
+        document.getElementById('blocked-site').textContent = blockedSite;
+
+        // Disable focus mode button
+        document.getElementById('disable-focus').addEventListener('click', async () => {
+            const result = await chrome.storage.local.get(['focusMode']);
+            const focusMode = result.focusMode || {};
+            focusMode.enabled = false;
+            await chrome.storage.local.set({ focusMode });
+
+            // Go back
+            window.history.back();
+        });
+    </script>
+</body>
+
+</html>

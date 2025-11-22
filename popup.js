@@ -236,4 +236,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // TODO: Update chart with new data
         }
     });
+
+    // Settings button - open settings page
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+    });
 });

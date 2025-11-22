@@ -1,9 +1,57 @@
 // BrowseRhythm Background Service Worker
 // Tracks active tab time and manages data storage
 
-importScripts('storage.js');
+importScripts('storage.js', 'blocklists.js');
 
 let currentSession = null;
+
+// ===== FOCUS MODE BLOCKING =====
+
+/**
+ * Get active blocklist based on Focus Mode settings
+ */
+async function getActiveBlocklist() {
+  const result = await chrome.storage.local.get(['focusMode']);
+  const focusMode = result.focusMode || { enabled: false, presets: {}, customBlocklist: [] };
+
+  if (!focusMode.enabled) {
+    return [];
+  }
+
+  let blocklist = [...focusMode.customBlocklist];
+
+  // Add preset lists if enabled
+  if (focusMode.presets.social) {
+    blocklist = blocklist.concat(PRESET_BLOCKLISTS.social);
+  }
+  if (focusMode.presets.streaming) {
+    blocklist = blocklist.concat(PRESET_BLOCKLISTS.streaming);
+  }
+  if (focusMode.presets.news) {
+    blocklist = blocklist.concat(PRESET_BLOCKLISTS.news);
+  }
+  if (focusMode.presets.gaming) {
+    blocklist = blocklist.concat(PRESET_BLOCKLISTS.gaming);
+  }
+
+  return blocklist;
+}
+
+/**
+ * Check if a domain is blocked
+ */
+async function isBlocked(url) {
+  const domain = getDomainFromUrl(url);
+  const blocklist = await getActiveBlocklist();
+
+  // Check if domain matches any blocked site
+  return blocklist.some(blocked => {
+    return domain === blocked || domain.endsWith('.' + blocked);
+  });
+}
+
+// ===== TIME TRACKING =====
+
 
 /**
  * Extract domain from URL
@@ -89,7 +137,37 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.url && tab.active && !changeInfo.url.startsWith('chrome://')) {
+    // Check if site is blocked before tracking
+    if (await isBlocked(changeInfo.url)) {
+      const domain = getDomainFromUrl(changeInfo.url);
+      chrome.tabs.update(tabId, {
+        url: chrome.runtime.getURL(`blocked.html?site=${encodeURIComponent(domain)}`)
+      });
+      return;
+    }
+
     await startTracking(tabId, changeInfo.url);
+  }
+});
+
+/**
+ * Block navigation to blocked sites
+ */
+chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
+  // Only check main frame navigations
+  if (details.frameId !== 0) return;
+
+  // Skip chrome:// and extension pages
+  if (details.url.startsWith('chrome://') || details.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
+  // Check if blocked
+  if (await isBlocked(details.url)) {
+    const domain = getDomainFromUrl(details.url);
+    chrome.tabs.update(details.tabId, {
+      url: chrome.runtime.getURL(`blocked.html?site=${encodeURIComponent(domain)}`)
+    });
   }
 });
 
