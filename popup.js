@@ -76,18 +76,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Calculate productivity score (placeholder algorithm)
+    // Calculate productivity score
     async function calculateProductivityScore() {
         const stats = await StorageUtils.getDailyStats();
         const totalTime = Object.values(stats).reduce((sum, time) => sum + time, 0);
 
-        if (totalTime === 0) return 0;
+        if (totalTime === 0) return 50; // Default start score
 
-        // Simple algorithm: based on total active time
-        // More sophisticated: categorize sites as productive/neutral/distracting
-        const activeHours = totalTime / 3600;
-        const score = Math.min(100, Math.round(activeHours * 10));
+        let productiveTime = 0;
+        let distractingTime = 0;
+        let neutralTime = 0;
 
-        return score;
+        for (const [domain, time] of Object.entries(stats)) {
+            if (DEFAULT_CATEGORIES.productive.some(d => domain.includes(d))) {
+                productiveTime += time;
+            } else if (DEFAULT_CATEGORIES.distracting.some(d => domain.includes(d))) {
+                distractingTime += time;
+            } else {
+                // Check if it's in neutral or just unknown (treat unknown as neutral for now)
+                neutralTime += time;
+            }
+        }
+
+        // Algorithm: Start at 50. Add for productive, subtract for distracting.
+        // Max 100, Min 0.
+        // Weight: Productive moves you towards 100. Distracting moves you towards 0.
+
+        const productiveShare = productiveTime / totalTime;
+        const distractingShare = distractingTime / totalTime;
+
+        // Formula: 50 + (Productive% * 50) - (Distracting% * 50)
+        let score = 50 + (productiveShare * 50) - (distractingShare * 50);
+
+        return Math.round(Math.max(0, Math.min(100, score)));
     }
 
     // Update productivity score
@@ -95,38 +116,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         const scoreElement = document.getElementById('score-value');
         const score = await calculateProductivityScore();
         scoreElement.textContent = score;
+
+        // Color coding
+        if (score >= 80) {
+            scoreElement.style.color = '#4ade80'; // Green
+        } else if (score >= 60) {
+            scoreElement.style.color = '#60a5fa'; // Blue
+        } else if (score >= 40) {
+            scoreElement.style.color = '#fbbf24'; // Yellow
+        } else {
+            scoreElement.style.color = '#f87171'; // Red
+        }
     }
 
     // Initialize Chart
     const ctx = document.getElementById('activityChart').getContext('2d');
+    let activityChart = null;
 
-    // Get hourly data
-    const hourlyData = await StorageUtils.getHourlyBreakdown();
+    async function updateChart() {
+        // Get hourly data
+        const hourlyData = await StorageUtils.getHourlyBreakdown();
 
-    // Convert seconds to minutes for display
-    const hourlyMinutes = hourlyData.map(seconds => Math.round(seconds / 60));
+        // Convert seconds to minutes for display
+        const hourlyMinutes = hourlyData.map(seconds => Math.round(seconds / 60));
 
-    // Create gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    if (isDarkMode) {
-        gradient.addColorStop(0, 'rgba(56, 189, 248, 0.5)');
-        gradient.addColorStop(1, 'rgba(129, 140, 248, 0.0)');
-    } else {
-        gradient.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-    }
+        const currentHour = new Date().getHours();
+        const labels = [];
+        for (let i = 0; i <= currentHour; i++) {
+            const hour = i % 12 || 12;
+            const ampm = i < 12 ? 'am' : 'pm';
+            labels.push(`${hour}${ampm}`);
+        }
 
-    const currentHour = new Date().getHours();
-    const labels = [];
-    for (let i = 0; i <= currentHour; i++) {
-        const hour = i % 12 || 12;
-        const ampm = i < 12 ? 'am' : 'pm';
-        labels.push(`${hour}${ampm}`);
-    }
+        // Create gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        if (isDarkMode) {
+            gradient.addColorStop(0, 'rgba(56, 189, 248, 0.5)');
+            gradient.addColorStop(1, 'rgba(129, 140, 248, 0.0)');
+        } else {
+            gradient.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+        }
 
-    const chartConfig = {
-        type: 'line',
-        data: {
+        const chartData = {
             labels: labels,
             datasets: [{
                 label: 'Activity',
@@ -139,70 +171,81 @@ document.addEventListener('DOMContentLoaded', async () => {
                 pointRadius: 0,
                 pointHoverRadius: 4
             }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-                    titleColor: isDarkMode ? '#f8fafc' : '#0f172a',
-                    bodyColor: isDarkMode ? '#94a3b8' : '#475569',
-                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                    borderWidth: 1,
-                    padding: 10,
-                    displayColors: false,
-                    callbacks: {
-                        label: function (context) {
-                            return context.parsed.y + ' min';
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        display: false
-                    },
-                    border: {
-                        display: false
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        color: isDarkMode ? '#64748b' : '#94a3b8',
-                        font: {
-                            family: "'Inter', sans-serif",
-                            size: 10
-                        }
-                    },
-                    border: {
-                        display: false
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index',
-            },
-        }
-    };
+        };
 
-    const chart = new Chart(ctx, chartConfig);
+        if (activityChart) {
+            activityChart.data = chartData;
+            activityChart.update();
+        } else {
+            const chartConfig = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: isDarkMode ? '#f8fafc' : '#0f172a',
+                            bodyColor: isDarkMode ? '#94a3b8' : '#475569',
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    return context.parsed.y + ' min';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: isDarkMode ? '#64748b' : '#94a3b8',
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 10
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            };
+            activityChart = new Chart(ctx, chartConfig);
+        }
+    }
+
+    await updateChart();
 
     // Focus Toggle Logic
     const focusToggle = document.getElementById('focus-toggle');
@@ -214,10 +257,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     focusToggle.checked = focusMode.enabled;
 
     // Update status text based on state
-    if (focusMode.enabled) {
-        focusStatus.textContent = "Focus Mode Active 🚀";
-        focusStatus.style.color = isDarkMode ? "#38bdf8" : "#0ea5e9";
+    function updateFocusVisuals(enabled) {
+        if (enabled) {
+            focusStatus.textContent = "Focus Mode Active 🚀";
+            focusStatus.style.color = isDarkMode ? "#38bdf8" : "#0ea5e9";
+            document.body.classList.add('focus-active');
+        } else {
+            focusStatus.textContent = "Enter the zone";
+            focusStatus.style.color = isDarkMode ? "#94a3b8" : "#475569";
+            document.body.classList.remove('focus-active');
+        }
     }
+
+    updateFocusVisuals(focusMode.enabled);
 
     focusToggle.addEventListener('change', async (e) => {
         const result = await chrome.storage.local.get(['focusMode']);
@@ -225,13 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         settings.enabled = e.target.checked;
         await chrome.storage.local.set({ focusMode: settings });
 
-        if (e.target.checked) {
-            focusStatus.textContent = "Focus Mode Active 🚀";
-            focusStatus.style.color = isDarkMode ? "#38bdf8" : "#0ea5e9";
-        } else {
-            focusStatus.textContent = "Enter the zone";
-            focusStatus.style.color = isDarkMode ? "#94a3b8" : "#475569";
-        }
+        updateFocusVisuals(e.target.checked);
     });
 
     // Set Date
@@ -248,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (namespace === 'local' && (changes.dailyStats || changes.hourlyData)) {
             loadTopSites();
             updateProductivityScore();
-            // TODO: Update chart with new data
+            updateChart();
         }
     });
 

@@ -6,15 +6,14 @@
 
 **BrowseRhythm** is a modern, privacy-focused browser extension that helps you understand your browsing habits and find your flow. It tracks your time on websites, provides beautiful analytics, and helps you stay productive with smart focus sessions.
 
----
-
 ## ✨ Features
 
-*   **📊 Visual Analytics**: View your browsing data in stunning, interactive charts.
-*   **⏱️ Automatic Tracking**: Seamlessly tracks time spent on active tabs.
-*   **🎯 Focus Sessions**: Set goals and block distractions to get into the zone.
-*   **🛡️ Privacy First**: Your data is stored locally and never leaves your device.
-*   **🎨 Modern UI**: A sleek, dark-themed interface designed for clarity and ease of use.
+*   **📊 Visual Analytics**: View your browsing data in stunning, interactive charts with a beautiful dark mode.
+*   **⏱️ Automatic Tracking**: Seamlessly tracks time spent on active tabs, ignoring idle time.
+*   **🧠 Productivity Score**: Get a real-time "Flow Score" based on your browsing habits (Productive vs. Distracting).
+*   **🎯 Focus Mode**: Block distracting categories (Social, Streaming, etc.) or custom sites to get into the zone.
+*   **🛡️ Privacy First**: **Zero data collection.** Your browsing history and stats are stored 100% locally on your device. No analytics, no cloud sync, no tracking.
+*   **🎨 Modern UI**: A sleek, glassmorphism-inspired interface designed for clarity and ease of use.
 
 ## 🚀 Installation
 

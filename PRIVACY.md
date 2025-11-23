@@ -25,7 +25,7 @@ BrowseRhythm collects the following data **locally on your device**:
 ## Data Storage
 
 ### Local Storage Only
-All data is stored locally on your device using Chrome's Storage API. **No data is transmitted to external servers.**
+**Zero Data Collection.** All data is stored 100% locally on your device using Chrome's Storage API. We do not have access to your data. **No data is ever transmitted to external servers.**
 
 ### Data Retention
 - Browsing data is automatically deleted after 30 days
